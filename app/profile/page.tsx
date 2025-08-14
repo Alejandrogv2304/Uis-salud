@@ -4,19 +4,31 @@ import { ProfileForm } from "@/components/profile/profile-form"
 import { Stethoscope, ArrowLeft } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 
 export default function ProfilePage() {
-  const { user, updateUser } = useAuth()
+  const { user, updateUser, isLoading } = useAuth()
   const router = useRouter()
+  const [isUpdating, setIsUpdating] = useState(false)
 
   useEffect(() => {
-    if (!user) {
+    // Solo redirigir si no está cargando, no hay usuario y no se está actualizando
+    if (!isLoading && !user && !isUpdating) {
       router.push("/auth")
     }
-  }, [user, router])
+  }, [user, router, isLoading, isUpdating])
 
-  if (!user) {
+  const handleUserUpdate = async (userData: Partial<typeof user>) => {
+    setIsUpdating(true)
+    try {
+      await updateUser(userData)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  // Mostrar loading si está cargando inicialmente
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-white flex items-center justify-center">
         <div className="text-center">
@@ -25,6 +37,11 @@ export default function ProfilePage() {
         </div>
       </div>
     )
+  }
+
+  // Si no hay usuario después de cargar, no mostrar nada (se redirigirá)
+  if (!user) {
+    return null
   }
 
   const handleBack = () => {
@@ -62,7 +79,7 @@ export default function ProfilePage() {
             <p className="text-gray-600">Gestiona tu información personal y revisa tus datos de contacto</p>
           </div>
 
-          <ProfileForm user={user} onUserUpdate={updateUser} />
+          <ProfileForm user={user} onUserUpdate={handleUserUpdate} />
         </div>
       </div>
 

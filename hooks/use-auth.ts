@@ -31,9 +31,20 @@ export function useAuth() {
   }
 
   const updateUser = async (userData: Partial<User>): Promise<User> => {
-    const updatedUser = await authService.updateUser(userData)
-    setUser(updatedUser)
-    return updatedUser
+    if (!user) {
+      throw new Error("Usuario no autenticado")
+    }
+
+    try {
+      const updatedUser = await authService.updateUser(userData)
+      // Actualizar el estado inmediatamente para evitar pérdida temporal
+      setUser(updatedUser)
+      return updatedUser
+    } catch (error) {
+      // En caso de error, mantener el usuario actual
+      console.error("Error updating user:", error)
+      throw error
+    }
   }
 
   return {
