@@ -1,16 +1,36 @@
 "use client"
 
 import { ProfileForm } from "@/components/profile/profile-form"
-import { Stethoscope } from "lucide-react"
-import type { User } from "@/lib/auth"
+import { Stethoscope, ArrowLeft } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 
-interface ProfilePageProps {
-  user: User
-  onUserUpdate: (user: User) => void
-  onBack: () => void
-}
+export default function ProfilePage() {
+  const { user, updateUser } = useAuth()
+  const router = useRouter()
 
-export default function ProfilePage({ user, onUserUpdate, onBack }: ProfilePageProps) {
+  useEffect(() => {
+    if (!user) {
+      router.push("/auth")
+    }
+  }, [user, router])
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    )
+  }
+
+  const handleBack = () => {
+    router.push("/")
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-white">
       {/* Header */}
@@ -24,7 +44,11 @@ export default function ProfilePage({ user, onUserUpdate, onBack }: ProfilePageP
                 <p className="text-green-100">Universidad Industrial de Santander - UIS</p>
               </div>
             </div>
-            <button onClick={onBack} className="bg-green-700 hover:bg-green-800 px-4 py-2 rounded-lg transition-colors">
+            <button
+              onClick={handleBack}
+              className="bg-green-700 hover:bg-green-800 px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
               Volver al Inicio
             </button>
           </div>
@@ -38,7 +62,7 @@ export default function ProfilePage({ user, onUserUpdate, onBack }: ProfilePageP
             <p className="text-gray-600">Gestiona tu información personal y revisa tus datos de contacto</p>
           </div>
 
-          <ProfileForm user={user} onUserUpdate={onUserUpdate} />
+          <ProfileForm user={user} onUserUpdate={updateUser} />
         </div>
       </div>
 
